@@ -48,8 +48,6 @@ describe('Citadel Packaging', () => {
 
                 addToCartButtonClasses = await getPropertyByHandle(addToCartButton, 'className');
             }
-
-            // expect(addToCartButtonClasses.includes('added')).to.equal(true);
             
             expect(addToCartButtonClasses).includes('added');
         });

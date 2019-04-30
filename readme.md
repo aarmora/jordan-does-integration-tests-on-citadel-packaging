@@ -6,7 +6,7 @@ Runs some simple integration tests on [Citadel Packaging](https://www.citadelpac
 
 Clone the repository and run `npm i`. 
 
-After that, you just need to run `npm start`.
+After that, you just need to run `npm test`.
 
 ### Prerequisites
 
