@@ -2,6 +2,8 @@
 
 Runs some simple integration tests on [Citadel Packaging](https://www.citadelpackaging.com/).
 
+[Full guide](https://javascriptwebscrapingguy.com/jordan-does-integration-tests-on-citadel-packaging/)
+
 ## Getting Started
 
 Clone the repository and run `npm i`. 

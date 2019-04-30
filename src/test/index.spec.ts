@@ -96,6 +96,8 @@ describe('Citadel Packaging', () => {
             else {
                 fail('Top form cart should be there');
             }
+            await page.waitForSelector('.btn-remove .fa', { visible: true});
+
             const removeButton = await page.$('.btn-remove .fa');
 
             if (removeButton) {
