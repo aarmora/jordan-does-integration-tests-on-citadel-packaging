@@ -25,7 +25,9 @@
   "homepage": "https://github.com/aarmora/jordan-does-integration-tests-on-citadel-packaging#readme",
   "dependencies": {
     "puppeteer": "^1.11.0",
-    "puppeteer-helpers": "^1.0.10"
+    "puppeteer-helpers": "^1.0.10",
+    "dotenv": "^6.2.0",
+    "webhook-discord": "^2.3.0"
   },
   "devDependencies": {
     "@types/node": "^11.11.6",

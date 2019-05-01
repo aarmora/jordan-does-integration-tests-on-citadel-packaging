@@ -1,7 +1,11 @@
-import puppeteer, { Browser, Page, ElementHandle } from 'puppeteer';
+import puppeteer, { Browser, Page } from 'puppeteer';
 import { getPropertyBySelector, getPropertyByHandle } from 'puppeteer-helpers';
 import { expect } from 'chai';
 import { fail } from 'assert';
+import * as dotenv from 'dotenv';
+import Webhook from 'webhook-discord';
+
+dotenv.config();
 
 describe('Citadel Packaging', () => {
     let browser: Browser;
@@ -13,19 +17,29 @@ describe('Citadel Packaging', () => {
         await page.setViewport({ width: 1920, height: 1080 });
     });
 
+    if (process.env.discordWebhookURL) {
+        afterEach(async function () {
+            if (this.currentTest && this.currentTest.state === 'failed') {
+                const hook = new Webhook(process.env.discordWebhookURL);
+                await hook.info('Citadel Packaging Testing', `${this.currentTest.title} - ${this.currentTest.state}`);
+            }
+        });
+    }
+
     after(async () => {
         await browser.close();
     });
 
     describe('Base page layout', () => {
         it('should have 5 tabs', async () => {
+
             const url = 'https://www.citadelpackaging.com/';
             await page.goto(url);
 
             await page.waitForSelector('#menu-main-menu > li');
             const tabs = await page.$$('#menu-main-menu > li');
 
-            expect(tabs.length).to.equal(5);
+            expect(tabs.length).to.equal(7);
         });
     });
 
@@ -48,7 +62,7 @@ describe('Citadel Packaging', () => {
 
                 addToCartButtonClasses = await getPropertyByHandle(addToCartButton, 'className');
             }
-            
+
             expect(addToCartButtonClasses).includes('added');
         });
     });
@@ -96,7 +110,7 @@ describe('Citadel Packaging', () => {
             else {
                 fail('Top form cart should be there');
             }
-            await page.waitForSelector('.btn-remove .fa', { visible: true});
+            await page.waitForSelector('.btn-remove .fa', { visible: true });
 
             const removeButton = await page.$('.btn-remove .fa');
 
@@ -152,7 +166,7 @@ describe('Citadel Packaging', () => {
             expect(products.length).to.be.greaterThan(0);
         });
 
-    });    
+    });
 
     describe('Responsive', () => {
 
@@ -162,11 +176,11 @@ describe('Citadel Packaging', () => {
             const url = 'https://www.citadelpackaging.com/';
             await page.goto(url);
 
-            await page.waitForSelector('.wrapper_vertical_menu.vertical_megamenu', { visible: true});
+            await page.waitForSelector('.wrapper_vertical_menu.vertical_megamenu', { visible: true });
 
             const hamburgerMenu = await page.$('.wrapper_vertical_menu.vertical_megamenu');
 
-            expect(hamburgerMenu).to.be.ok;                
+            expect(hamburgerMenu).to.be.ok;
 
         });
 
