@@ -12,7 +12,7 @@ describe('Citadel Packaging', () => {
     let page: Page;
 
     before(async () => {
-        browser = await puppeteer.launch({ headless: false });
+        let browser: Browser = await setUpBrowser();
         page = await browser.newPage();
         await page.setViewport({ width: 1920, height: 1080 });
     });
@@ -26,9 +26,9 @@ describe('Citadel Packaging', () => {
         });
     }
 
-    after(async () => {
-        await browser.close();
-    });
+    // after(async () => {
+    //     await browser.close();
+    // });
 
     describe('Base page layout', () => {
         it('should have 5 tabs', async () => {
@@ -39,7 +39,7 @@ describe('Citadel Packaging', () => {
             await page.waitForSelector('#menu-main-menu > li');
             const tabs = await page.$$('#menu-main-menu > li');
 
-            expect(tabs.length).to.equal(7);
+            expect(tabs.length).to.equal(5);
         });
     });
 
@@ -188,3 +188,57 @@ describe('Citadel Packaging', () => {
 
 
 });
+
+
+
+async function setUpBrowser() {
+    const cliArgs = process.argv.slice(2);
+    let browser: Browser;
+
+    let ubuntu = cliArgs.includes('ubuntu');
+    let headless = cliArgs.includes('headless');
+
+    if (!headless && process.env.hasOwnProperty("PPTR_HEADLESS") && String(process.env.PPTR_HEADLESS) === 'true') {
+        headless = true;
+    }
+
+    console.log('puppeteer: ');
+    console.log(`    headless: ${headless}`);
+    console.log(`    ubuntu: ${ubuntu}`);
+
+    if (ubuntu) {
+        const pptrArgs: puppeteer.LaunchOptions = {
+            headless: true,
+            ignoreHTTPSErrors: true,
+            args: [
+                '--no-sandbox',
+                '--disable-setuid-sandbox',
+                '--disable-infobars',
+                '--window-position=0,0',
+                '--ignore-certifcate-errors',
+                '--ignore-certifcate-errors-spki-list',
+                '--user-agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/65.0.3312.0 Safari/537.36"'
+            ],
+        };
+
+        if (process.env.hasOwnProperty("PPTR_EXEC_PATH")) {
+            pptrArgs.executablePath = process.env.PPTR_EXEC_PATH;
+        }
+
+        browser = await puppeteer.launch(pptrArgs);
+    }
+    else {
+        const pptrArgs: puppeteer.LaunchOptions = {
+            headless,
+            args: [`--window-size=${1800},${1200}`],
+        };
+
+        if (process.env.hasOwnProperty("PPTR_EXEC_PATH")) {
+            pptrArgs.executablePath = process.env.PPTR_EXEC_PATH;
+        }
+
+        browser = await puppeteer.launch(pptrArgs);
+    }
+
+    return Promise.resolve(browser);
+}
