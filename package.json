@@ -4,6 +4,7 @@
   "description": "Using puppeteer, I do integration tests on Citadel Packaging",
   "main": "./dist/index.js",
   "scripts": {
+    "preinstall": "npm i -g mocha",
     "test": "mocha --timeout 30000 -r ts-node/register src/test/**/*.spec.ts --exit",
     "test:ubuntu": "mocha --timeout 30000 -r ts-node/register src/test/**/*.spec.ts --exit ubuntu",
     "test:headless": "mocha --timeout 30000 -r ts-node/register src/test/**/*.spec.ts --exit headless"

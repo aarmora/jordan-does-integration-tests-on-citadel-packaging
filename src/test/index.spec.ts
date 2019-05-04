@@ -7,20 +7,26 @@ import Webhook from 'webhook-discord';
 
 dotenv.config();
 
-describe('Citadel Packaging', () => {
+describe('Citadel Packaging', async () => {
     let browser: Browser;
     let page: Page;
+    let hook: any;
+
+    if (process.env.discordWebhookURL) {
+        hook = new Webhook(process.env.discordWebhookURL);
+    }
+
 
     before(async () => {
         let browser: Browser = await setUpBrowser();
         page = await browser.newPage();
         await page.setViewport({ width: 1920, height: 1080 });
+        await hook.info('Citadel Packaging Testing', 'Started integration tests');
     });
 
     if (process.env.discordWebhookURL) {
         afterEach(async function () {
             if (this.currentTest && this.currentTest.state === 'failed') {
-                const hook = new Webhook(process.env.discordWebhookURL);
                 await hook.info('Citadel Packaging Testing', `${this.currentTest.title} - ${this.currentTest.state}`);
             }
         });
