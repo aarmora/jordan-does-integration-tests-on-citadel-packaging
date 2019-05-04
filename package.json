@@ -5,8 +5,8 @@
   "main": "./dist/index.js",
   "scripts": {
     "test": "mocha --timeout 30000 -r ts-node/register src/test/**/*.spec.ts --exit",
-    "start:ubuntu": "mocha --timeout 30000 -r ts-node/register src/test/**/*.spec.ts --exit ubuntu",
-    "start:headless": "mocha --timeout 30000 -r ts-node/register src/test/**/*.spec.ts --exit headless"
+    "test:ubuntu": "mocha --timeout 30000 -r ts-node/register src/test/**/*.spec.ts --exit ubuntu",
+    "test:headless": "mocha --timeout 30000 -r ts-node/register src/test/**/*.spec.ts --exit headless"
   },
   "repository": {
     "type": "git",
