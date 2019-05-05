@@ -8,33 +8,20 @@ import Webhook from 'webhook-discord';
 dotenv.config();
 
 describe('Citadel Packaging', async () => {
-    let browser: Browser;
     let page: Page;
-    let hook: any;
-
-    if (process.env.discordWebhookURL) {
-        hook = new Webhook(process.env.discordWebhookURL);
-    }
-
 
     before(async () => {
         let browser: Browser = await setUpBrowser();
         page = await browser.newPage();
         await page.setViewport({ width: 1920, height: 1080 });
-        await hook.info('Citadel Packaging Testing', 'Started integration tests');
+        await notify('Started integration tests');
     });
 
-    if (process.env.discordWebhookURL) {
-        afterEach(async function () {
-            if (this.currentTest && this.currentTest.state === 'failed') {
-                await hook.info('Citadel Packaging Testing', `${this.currentTest.title} - ${this.currentTest.state}`);
-            }
-        });
-    }
-
-    // after(async () => {
-    //     await browser.close();
-    // });
+    afterEach(async function () {
+        if (this.currentTest && this.currentTest.state === 'failed') {
+            await notify(`${this.currentTest.title} - ${this.currentTest.state}`);
+        }
+    });
 
     describe('Base page layout', () => {
         it('should have 5 tabs', async () => {
@@ -247,4 +234,20 @@ async function setUpBrowser() {
     }
 
     return Promise.resolve(browser);
+}
+
+async function notify(message: string) {
+
+    return new Promise(async (resolve) => {
+
+        if (process.env.discordWebhookURL) {
+            const hook = new Webhook(process.env.discordWebhookURL);
+            await hook.info('Citadel Packaging Testing', message);
+        }
+        else {
+            console.log(message);
+        }
+
+        resolve();
+    });
 }
