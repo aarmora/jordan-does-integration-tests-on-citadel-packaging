@@ -6,7 +6,9 @@
   "scripts": {
     "preinstall": "npm i -g mocha",
     "test": "mocha --timeout 30000 -r ts-node/register src/test/**/*.spec.ts --exit",
+    "test:firefox": "mocha --timeout 30000 -r ts-node/register src/test/**/*.spec.ts --exit firefox",
     "test:ubuntu": "mocha --timeout 30000 -r ts-node/register src/test/**/*.spec.ts --exit ubuntu",
+    "test:ubuntu-firefox": "mocha --timeout 30000 -r ts-node/register src/test/**/*.spec.ts --exit ubuntu firefox",
     "test:headless": "mocha --timeout 30000 -r ts-node/register src/test/**/*.spec.ts --exit headless"
   },
   "repository": {
@@ -27,20 +29,21 @@
   },
   "homepage": "https://github.com/aarmora/jordan-does-integration-tests-on-citadel-packaging#readme",
   "dependencies": {
-    "puppeteer": "^1.11.0",
-    "puppeteer-helpers": "^1.0.10",
     "dotenv": "^6.2.0",
+    "puppeteer": "^1.11.0",
+    "puppeteer-firefox": "^0.5.0",
+    "puppeteer-helpers": "^1.0.10",
     "webhook-discord": "^2.3.0"
   },
   "devDependencies": {
-    "@types/node": "^11.11.6",
-    "@types/puppeteer": "^1.11.1",
-    "tslint": "^5.14.0",
-    "typescript": "^3.2.2",
     "@types/chai": "^4.1.7",
     "@types/mocha": "^5.2.5",
+    "@types/node": "^11.11.6",
+    "@types/puppeteer": "^1.11.1",
     "chai": "^4.2.0",
     "mocha": "^5.2.0",
-    "ts-node": "^7.0.1"
+    "ts-node": "^7.0.1",
+    "tslint": "^5.14.0",
+    "typescript": "^3.2.2"
   }
 }
