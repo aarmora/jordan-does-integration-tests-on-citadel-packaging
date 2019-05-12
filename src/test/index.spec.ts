@@ -4,27 +4,31 @@ import { expect } from 'chai';
 import { fail } from 'assert';
 import * as dotenv from 'dotenv';
 import Webhook from 'webhook-discord';
+const puppeteerFirefox = require('puppeteer-firefox');
 
 dotenv.config();
+
+const cliArgs = process.argv.slice(2);
+const firefox = cliArgs.includes('firefox');
+let browser: Browser;
 
 describe('Citadel Packaging', async () => {
     let page: Page;
 
     before(async () => {
-        let browser: Browser = await setUpBrowser();
-        page = await browser.newPage();
-        await page.setViewport({ width: 1920, height: 1080 });
-        await notify('Started integration tests');
+        browser = await setUpBrowser();
+        await notify(`${firefox ? 'Firefox: ' : ''}Started integration tests`);
     });
 
     afterEach(async function () {
         if (this.currentTest && this.currentTest.state === 'failed') {
-            await notify(`${this.currentTest.title} - ${this.currentTest.state}`);
+            await notify(`${firefox ? 'Firefox: ' : ''}${this.currentTest.title} - ${this.currentTest.state}`);
         }
     });
-
     describe('Base page layout', () => {
         it('should have 5 tabs', async () => {
+            const context = await browser.createIncognitoBrowserContext();
+            page = await context.newPage();
 
             const url = 'https://www.citadelpackaging.com/';
             await page.goto(url);
@@ -33,12 +37,17 @@ describe('Citadel Packaging', async () => {
             const tabs = await page.$$('#menu-main-menu > li');
 
             expect(tabs.length).to.equal(5);
+            await context.close();
         });
     });
 
 
     describe('Add to cart', () => {
         it('should have the "added" class when clicking add to cart button', async () => {
+            const context = await browser.createIncognitoBrowserContext();
+            page = await context.newPage();
+            await page.setViewport({ width: 1920, height: 1080 });
+
             const url = 'https://www.citadelpackaging.com/product-category/glass-containers/glass-bottles/';
 
             await page.goto(url);
@@ -57,20 +66,29 @@ describe('Citadel Packaging', async () => {
             }
 
             expect(addToCartButtonClasses).includes('added');
+            await context.close();
         });
     });
 
-
-    // These tests will assume that the previous test (adding to cart) has been done
-
-    describe('After adding to cart', () => {
-        it('should show items in the cart after they have been aded', async () => {
+    describe('Cart actions', () => {
+        it('should show items in the cart after they have been added', async () => {
+            const context = await browser.createIncognitoBrowserContext();
+            page = await context.newPage();
+            await page.setViewport({ width: 1920, height: 1080 });
 
             const url = 'https://www.citadelpackaging.com/product-category/glass-containers/glass-bottles/';
 
             await page.goto(url);
 
-            await page.waitForSelector('.number-item .item');
+            await page.waitForSelector('.add_to_cart_button.ajax_add_to_cart');
+
+            const addToCartButton = await page.$('.add_to_cart_button.ajax_add_to_cart');
+
+            if (addToCartButton) {
+                await addToCartButton.click();
+            }
+
+            await page.waitForResponse(res => res.url().endsWith('/?wc-ajax=add_to_cart'));
 
             let numberOfItemsInCart = await getPropertyBySelector(page, '.number-item .item', 'innerHTML');
 
@@ -80,13 +98,27 @@ describe('Citadel Packaging', async () => {
             }
 
             expect(numberOfItemsInCart).to.be.greaterThan(0);
+            await context.close();
+
+
         });
 
         it('should have 0 items in the cart after clicking the "Remove this item" icon', async () => {
+            const context = await browser.createIncognitoBrowserContext();
+            page = await context.newPage();
+            await page.setViewport({ width: 1920, height: 1080 });
 
             const url = 'https://www.citadelpackaging.com/product-category/glass-containers/glass-bottles/';
 
             await page.goto(url);
+
+            await page.waitForSelector('.add_to_cart_button.ajax_add_to_cart');
+
+            const addToCartButton = await page.$('.add_to_cart_button.ajax_add_to_cart');
+
+            if (addToCartButton) {
+                await addToCartButton.click();
+            }
 
             await page.waitForSelector('.number-item .item');
 
@@ -123,12 +155,17 @@ describe('Citadel Packaging', async () => {
             }
 
             expect(numberOfItemsInCart).to.equal(0);
+            await context.close();
         });
     });
 
     describe('Search', () => {
 
         it('should have results when a search is done', async () => {
+            const context = await browser.createIncognitoBrowserContext();
+            page = await context.newPage();
+            await page.setViewport({ width: 1920, height: 1080 });
+
             const url = 'https://www.citadelpackaging.com/';
             await page.goto(url);
 
@@ -152,18 +189,22 @@ describe('Citadel Packaging', async () => {
                 fail('Should have search button');
             }
 
-            await page.waitForNavigation({ waitUntil: 'domcontentloaded' });
+            await page.waitForSelector('.item');
 
             const products = await page.$$('.item');
 
             expect(products.length).to.be.greaterThan(0);
+            await context.close();
         });
 
     });
 
     describe('Responsive', () => {
 
-        it('should have a hamburger menu', async () => {
+        it('should have a hamburger menu when viewport is 400 x 400', async () => {
+            const context = await browser.createIncognitoBrowserContext();
+            page = await context.newPage();
+
             await page.setViewport({ width: 400, height: 400 });
 
             const url = 'https://www.citadelpackaging.com/';
@@ -174,7 +215,7 @@ describe('Citadel Packaging', async () => {
             const hamburgerMenu = await page.$('.wrapper_vertical_menu.vertical_megamenu');
 
             expect(hamburgerMenu).to.be.ok;
-
+            await context.close();
         });
 
     });
@@ -183,13 +224,12 @@ describe('Citadel Packaging', async () => {
 });
 
 
-
 async function setUpBrowser() {
-    const cliArgs = process.argv.slice(2);
     let browser: Browser;
 
     let ubuntu = cliArgs.includes('ubuntu');
     let headless = cliArgs.includes('headless');
+    let firefox = cliArgs.includes('firefox');
 
     if (!headless && process.env.hasOwnProperty("PPTR_HEADLESS") && String(process.env.PPTR_HEADLESS) === 'true') {
         headless = true;
@@ -198,8 +238,9 @@ async function setUpBrowser() {
     console.log('puppeteer: ');
     console.log(`    headless: ${headless}`);
     console.log(`    ubuntu: ${ubuntu}`);
+    console.log(`    firefox: ${firefox}`);
 
-    if (ubuntu) {
+    if (ubuntu && !firefox) {
         const pptrArgs: puppeteer.LaunchOptions = {
             headless: true,
             ignoreHTTPSErrors: true,
@@ -211,7 +252,7 @@ async function setUpBrowser() {
                 '--ignore-certifcate-errors',
                 '--ignore-certifcate-errors-spki-list',
                 '--user-agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/65.0.3312.0 Safari/537.36"'
-            ],
+            ]
         };
 
         if (process.env.hasOwnProperty("PPTR_EXEC_PATH")) {
@@ -220,10 +261,45 @@ async function setUpBrowser() {
 
         browser = await puppeteer.launch(pptrArgs);
     }
+    else if (ubuntu && firefox) {
+        const pptrArgs: puppeteer.LaunchOptions = {
+            headless: true,
+            ignoreHTTPSErrors: true,
+            args: [
+                '--no-sandbox',
+                '--disable-setuid-sandbox',
+                '--disable-infobars',
+                '--window-position=0,0',
+                '--ignore-certifcate-errors',
+                '--ignore-certifcate-errors-spki-list',
+                '--user-agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/65.0.3312.0 Safari/537.36"'
+            ]
+        };
+
+        if (process.env.hasOwnProperty("PPTR_EXEC_PATH")) {
+            pptrArgs.executablePath = process.env.PPTR_EXEC_PATH;
+        }
+
+        browser = await puppeteerFirefox.launch();
+
+    }
+    else if (firefox) {
+        const pptrArgs: puppeteer.LaunchOptions = {
+            headless,
+            args: [`--window-size=${1800},${1200}`]
+        };
+
+        if (process.env.hasOwnProperty("PPTR_EXEC_PATH")) {
+            pptrArgs.executablePath = process.env.PPTR_EXEC_PATH;
+        }
+
+        browser = await puppeteerFirefox.launch(pptrArgs);
+
+    }
     else {
         const pptrArgs: puppeteer.LaunchOptions = {
             headless,
-            args: [`--window-size=${1800},${1200}`],
+            args: [`--window-size=${1800},${1200}`]
         };
 
         if (process.env.hasOwnProperty("PPTR_EXEC_PATH")) {
