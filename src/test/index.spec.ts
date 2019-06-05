@@ -1,4 +1,4 @@
-import puppeteer, { Browser, Page } from 'puppeteer';
+import puppeteer, { Browser, Page, ElementHandle } from 'puppeteer';
 import { getPropertyBySelector, getPropertyByHandle } from 'puppeteer-helpers';
 import { expect } from 'chai';
 import { fail } from 'assert';
@@ -43,7 +43,7 @@ describe('Citadel Packaging', async () => {
 
 
     describe('Add to cart', () => {
-        it('should have the "added" class when clicking add to cart button', async () => {
+        it('should have woocomerce-message after adding to cart', async () => {
             const context = await browser.createIncognitoBrowserContext();
             page = await context.newPage();
             await page.setViewport({ width: 1920, height: 1080 });
@@ -56,16 +56,15 @@ describe('Citadel Packaging', async () => {
 
             const addToCartButton = await page.$('.add_to_cart_button.ajax_add_to_cart');
 
-            let addToCartButtonClasses = '';
             if (addToCartButton) {
                 await addToCartButton.click();
-
-                await page.waitForSelector('.added');
-
-                addToCartButtonClasses = await getPropertyByHandle(addToCartButton, 'className');
             }
 
-            expect(addToCartButtonClasses).includes('added');
+            await page.waitForSelector('.woocommerce-message');
+
+            const woocommerceMessageElement = await page.$('.woocommerce-message');
+
+            expect(woocommerceMessageElement).to.not.be.null;
             await context.close();
         });
     });
@@ -88,7 +87,7 @@ describe('Citadel Packaging', async () => {
                 await addToCartButton.click();
             }
 
-            await page.waitForResponse(res => res.url().endsWith('/?wc-ajax=add_to_cart'));
+            await page.waitForSelector('.woocommerce-message');
 
             let numberOfItemsInCart = await getPropertyBySelector(page, '.number-item .item', 'innerHTML');
 
