@@ -9,7 +9,8 @@
     "test:firefox": "mocha --timeout 30000 -r ts-node/register src/test/**/*.spec.ts --exit firefox",
     "test:ubuntu": "mocha --timeout 30000 -r ts-node/register src/test/**/*.spec.ts --exit ubuntu",
     "test:ubuntu-firefox": "mocha --timeout 30000 -r ts-node/register src/test/**/*.spec.ts --exit ubuntu firefox",
-    "test:headless": "mocha --timeout 30000 -r ts-node/register src/test/**/*.spec.ts --exit headless"
+    "test:headless": "mocha --timeout 30000 -r ts-node/register src/test/**/*.spec.ts --exit headless",
+    "start": "tsc && node ./dist/index.js"
   },
   "repository": {
     "type": "git",

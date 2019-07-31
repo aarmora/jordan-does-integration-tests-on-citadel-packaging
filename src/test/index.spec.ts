@@ -1,5 +1,5 @@
-import puppeteer, { Browser, Page, ElementHandle } from 'puppeteer';
-import { getPropertyBySelector, getPropertyByHandle } from 'puppeteer-helpers';
+import puppeteer, { Browser, Page } from 'puppeteer';
+import { getPropertyBySelector } from 'puppeteer-helpers';
 import { expect } from 'chai';
 import { fail } from 'assert';
 import * as dotenv from 'dotenv';
@@ -12,215 +12,215 @@ const cliArgs = process.argv.slice(2);
 const firefox = cliArgs.includes('firefox');
 let browser: Browser;
 
-describe('Citadel Packaging', async () => {
-    let page: Page;
+// describe('Citadel Packaging', async () => {
+//     let page: Page;
 
-    before(async () => {
-        browser = await setUpBrowser();
-        await notify(`${firefox ? 'Firefox: ' : ''}Started integration tests`);
-    });
+//     before(async () => {
+//         browser = await setUpBrowser();
+//         await notify(`${firefox ? 'Firefox: ' : ''}Started integration tests`);
+//     });
 
-    afterEach(async function () {
-        if (this.currentTest && this.currentTest.state === 'failed') {
-            await notify(`${firefox ? 'Firefox: ' : ''}${this.currentTest.title} - ${this.currentTest.state}`);
-        }
-    });
-    describe('Base page layout', () => {
-        it('should have 5 tabs', async () => {
-            const context = await browser.createIncognitoBrowserContext();
-            page = await context.newPage();
+//     afterEach(async function () {
+//         if (this.currentTest && this.currentTest.state === 'failed') {
+//             await notify(`${firefox ? 'Firefox: ' : ''}${this.currentTest.title} - ${this.currentTest.state}`);
+//         }
+//     });
+//     describe('Base page layout', () => {
+//         it('should have 5 tabs', async () => {
+//             const context = await browser.createIncognitoBrowserContext();
+//             page = await context.newPage();
 
-            const url = 'https://www.citadelpackaging.com/';
-            await page.goto(url);
+//             const url = 'https://www.citadelpackaging.com/';
+//             await page.goto(url);
 
-            await page.waitForSelector('#menu-main-menu > li');
-            const tabs = await page.$$('#menu-main-menu > li');
+//             await page.waitForSelector('#menu-main-menu > li');
+//             const tabs = await page.$$('#menu-main-menu > li');
 
-            expect(tabs.length).to.equal(5);
-            await context.close();
-        });
-    });
-
-
-    describe('Add to cart', () => {
-        it('should have woocomerce-message after adding to cart', async () => {
-            const context = await browser.createIncognitoBrowserContext();
-            page = await context.newPage();
-            await page.setViewport({ width: 1920, height: 1080 });
-
-            const url = 'https://www.citadelpackaging.com/product-category/glass-containers/glass-bottles/';
-
-            await page.goto(url);
-
-            await page.waitForSelector('.add_to_cart_button.ajax_add_to_cart');
-
-            const addToCartButton = await page.$('.add_to_cart_button.ajax_add_to_cart');
-
-            if (addToCartButton) {
-                await addToCartButton.click();
-            }
-
-            await page.waitForSelector('.woocommerce-message');
-
-            const woocommerceMessageElement = await page.$('.woocommerce-message');
-
-            expect(woocommerceMessageElement).to.not.be.null;
-            await context.close();
-        });
-    });
-
-    describe('Cart actions', () => {
-        it('should show items in the cart after they have been added', async () => {
-            const context = await browser.createIncognitoBrowserContext();
-            page = await context.newPage();
-            await page.setViewport({ width: 1920, height: 1080 });
-
-            const url = 'https://www.citadelpackaging.com/product-category/glass-containers/glass-bottles/';
-
-            await page.goto(url);
-
-            await page.waitForSelector('.add_to_cart_button.ajax_add_to_cart');
-
-            const addToCartButton = await page.$('.add_to_cart_button.ajax_add_to_cart');
-
-            if (addToCartButton) {
-                await addToCartButton.click();
-            }
-
-            await page.waitForSelector('.woocommerce-message');
-
-            let numberOfItemsInCart = await getPropertyBySelector(page, '.number-item .item', 'innerHTML');
-
-            // Remove 'items' and parseInt
-            if (numberOfItemsInCart) {
-                numberOfItemsInCart = parseInt(numberOfItemsInCart.split(' ')[0]);
-            }
-
-            expect(numberOfItemsInCart).to.be.greaterThan(0);
-            await context.close();
+//             expect(tabs.length).to.equal(5);
+//             await context.close();
+//         });
+//     });
 
 
-        });
+//     describe('Add to cart', () => {
+//         it('should have woocomerce-message after adding to cart', async () => {
+//             const context = await browser.createIncognitoBrowserContext();
+//             page = await context.newPage();
+//             await page.setViewport({ width: 1920, height: 1080 });
 
-        it('should have 0 items in the cart after clicking the "Remove this item" icon', async () => {
-            const context = await browser.createIncognitoBrowserContext();
-            page = await context.newPage();
-            await page.setViewport({ width: 1920, height: 1080 });
+//             const url = 'https://www.citadelpackaging.com/product-category/glass-containers/glass-bottles/';
 
-            const url = 'https://www.citadelpackaging.com/product-category/glass-containers/glass-bottles/';
+//             await page.goto(url);
 
-            await page.goto(url);
+//             await page.waitForSelector('.add_to_cart_button.ajax_add_to_cart');
 
-            await page.waitForSelector('.add_to_cart_button.ajax_add_to_cart');
+//             const addToCartButton = await page.$('.add_to_cart_button.ajax_add_to_cart');
 
-            const addToCartButton = await page.$('.add_to_cart_button.ajax_add_to_cart');
+//             if (addToCartButton) {
+//                 await addToCartButton.click();
+//             }
 
-            if (addToCartButton) {
-                await addToCartButton.click();
-            }
+//             await page.waitForSelector('.woocommerce-message');
 
-            await page.waitForSelector('.number-item .item');
+//             const woocommerceMessageElement = await page.$('.woocommerce-message');
 
-            const topFormCart = await page.$('.top-form-minicart');
+//             expect(woocommerceMessageElement).to.not.be.null;
+//             await context.close();
+//         });
+//     });
 
-            if (topFormCart) {
-                try {
-                    await topFormCart.hover();
-                }
-                catch (err) {
-                    console.log('hover err', err);
-                }
-            }
-            else {
-                fail('Top form cart should be there');
-            }
-            await page.waitForSelector('.btn-remove .fa', { visible: true });
+//     describe('Cart actions', () => {
+//         it('should show items in the cart after they have been added', async () => {
+//             const context = await browser.createIncognitoBrowserContext();
+//             page = await context.newPage();
+//             await page.setViewport({ width: 1920, height: 1080 });
 
-            const removeButton = await page.$('.btn-remove .fa');
+//             const url = 'https://www.citadelpackaging.com/product-category/glass-containers/glass-bottles/';
 
-            if (removeButton) {
-                await removeButton.click();
-            }
-            else {
-                fail('No remove button found. Failing.');
-            }
-            await page.waitForNavigation({ waitUntil: 'domcontentloaded' });
+//             await page.goto(url);
 
-            let numberOfItemsInCart = await getPropertyBySelector(page, '.number-item .item', 'innerHTML');
+//             await page.waitForSelector('.add_to_cart_button.ajax_add_to_cart');
 
-            // Remove 'items' and parseInt
-            if (numberOfItemsInCart) {
-                numberOfItemsInCart = parseInt(numberOfItemsInCart.split(' ')[0]);
-            }
+//             const addToCartButton = await page.$('.add_to_cart_button.ajax_add_to_cart');
 
-            expect(numberOfItemsInCart).to.equal(0);
-            await context.close();
-        });
-    });
+//             if (addToCartButton) {
+//                 await addToCartButton.click();
+//             }
 
-    describe('Search', () => {
+//             await page.waitForSelector('.woocommerce-message');
 
-        it('should have results when a search is done', async () => {
-            const context = await browser.createIncognitoBrowserContext();
-            page = await context.newPage();
-            await page.setViewport({ width: 1920, height: 1080 });
+//             let numberOfItemsInCart = await getPropertyBySelector(page, '.number-item .item', 'innerHTML');
 
-            const url = 'https://www.citadelpackaging.com/';
-            await page.goto(url);
+//             // Remove 'items' and parseInt
+//             if (numberOfItemsInCart) {
+//                 numberOfItemsInCart = parseInt(numberOfItemsInCart.split(' ')[0]);
+//             }
 
-            await page.waitForSelector('#s');
-            const searchInput = await page.$('#s');
-
-            if (searchInput) {
-                await searchInput.type('Boston round');
-            }
-            else {
-                fail('Should have searchInput');
-            }
-
-            await page.waitForSelector('#searchform_special button');
-            const searchButton = await page.$('#searchform_special button');
-
-            if (searchButton) {
-                await searchButton.click();
-            }
-            else {
-                fail('Should have search button');
-            }
-
-            await page.waitForSelector('.item');
-
-            const products = await page.$$('.item');
-
-            expect(products.length).to.be.greaterThan(0);
-            await context.close();
-        });
-
-    });
-
-    describe('Responsive', () => {
-
-        it('should have a hamburger menu when viewport is 400 x 400', async () => {
-            const context = await browser.createIncognitoBrowserContext();
-            page = await context.newPage();
-
-            await page.setViewport({ width: 400, height: 400 });
-
-            const url = 'https://www.citadelpackaging.com/';
-            await page.goto(url);
-
-            await page.waitForSelector('.wrapper_vertical_menu.vertical_megamenu', { visible: true });
-
-            const hamburgerMenu = await page.$('.wrapper_vertical_menu.vertical_megamenu');
-
-            expect(hamburgerMenu).to.be.ok;
-            await context.close();
-        });
-
-    });
+//             expect(numberOfItemsInCart).to.be.greaterThan(0);
+//             await context.close();
 
 
-});
+//         });
+
+//         it('should have 0 items in the cart after clicking the "Remove this item" icon', async () => {
+//             const context = await browser.createIncognitoBrowserContext();
+//             page = await context.newPage();
+//             await page.setViewport({ width: 1920, height: 1080 });
+
+//             const url = 'https://www.citadelpackaging.com/product-category/glass-containers/glass-bottles/';
+
+//             await page.goto(url);
+
+//             await page.waitForSelector('.add_to_cart_button.ajax_add_to_cart');
+
+//             const addToCartButton = await page.$('.add_to_cart_button.ajax_add_to_cart');
+
+//             if (addToCartButton) {
+//                 await addToCartButton.click();
+//             }
+
+//             await page.waitForSelector('.number-item .item');
+
+//             const topFormCart = await page.$('.top-form-minicart');
+
+//             if (topFormCart) {
+//                 try {
+//                     await topFormCart.hover();
+//                 }
+//                 catch (err) {
+//                     console.log('hover err', err);
+//                 }
+//             }
+//             else {
+//                 fail('Top form cart should be there');
+//             }
+//             await page.waitForSelector('.btn-remove .fa', { visible: true });
+
+//             const removeButton = await page.$('.btn-remove .fa');
+
+//             if (removeButton) {
+//                 await removeButton.click();
+//             }
+//             else {
+//                 fail('No remove button found. Failing.');
+//             }
+//             await page.waitForNavigation({ waitUntil: 'domcontentloaded' });
+
+//             let numberOfItemsInCart = await getPropertyBySelector(page, '.number-item .item', 'innerHTML');
+
+//             // Remove 'items' and parseInt
+//             if (numberOfItemsInCart) {
+//                 numberOfItemsInCart = parseInt(numberOfItemsInCart.split(' ')[0]);
+//             }
+
+//             expect(numberOfItemsInCart).to.equal(0);
+//             await context.close();
+//         });
+//     });
+
+//     describe('Search', () => {
+
+//         it('should have results when a search is done', async () => {
+//             const context = await browser.createIncognitoBrowserContext();
+//             page = await context.newPage();
+//             await page.setViewport({ width: 1920, height: 1080 });
+
+//             const url = 'https://www.citadelpackaging.com/';
+//             await page.goto(url);
+
+//             await page.waitForSelector('#s');
+//             const searchInput = await page.$('#s');
+
+//             if (searchInput) {
+//                 await searchInput.type('Boston round');
+//             }
+//             else {
+//                 fail('Should have searchInput');
+//             }
+
+//             await page.waitForSelector('#searchform_special button');
+//             const searchButton = await page.$('#searchform_special button');
+
+//             if (searchButton) {
+//                 await searchButton.click();
+//             }
+//             else {
+//                 fail('Should have search button');
+//             }
+
+//             await page.waitForSelector('.item');
+
+//             const products = await page.$$('.item');
+
+//             expect(products.length).to.be.greaterThan(0);
+//             await context.close();
+//         });
+
+//     });
+
+//     describe('Responsive', () => {
+
+//         it('should have a hamburger menu when viewport is 400 x 400', async () => {
+//             const context = await browser.createIncognitoBrowserContext();
+//             page = await context.newPage();
+
+//             await page.setViewport({ width: 400, height: 400 });
+
+//             const url = 'https://www.citadelpackaging.com/';
+//             await page.goto(url);
+
+//             await page.waitForSelector('.wrapper_vertical_menu.vertical_megamenu', { visible: true });
+
+//             const hamburgerMenu = await page.$('.wrapper_vertical_menu.vertical_megamenu');
+
+//             expect(hamburgerMenu).to.be.ok;
+//             await context.close();
+//         });
+
+//     });
+
+
+// });
 
 
 async function setUpBrowser() {
