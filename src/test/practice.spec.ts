@@ -1,6 +1,5 @@
 import puppeteer, { Browser, Page } from 'puppeteer';
 import { expect } from 'chai';
-import { fail } from 'assert';
 const puppeteerFirefox = require('puppeteer-firefox');
 let browser: Browser;
 
@@ -16,8 +15,8 @@ describe('Boise Code Works', async () => {
             const context = await browser.createIncognitoBrowserContext();
             page = await context.newPage();
 
-            // const url = 'https://javascriptwebscrapingguy.com/';
-            const url = 'https://boisecodeworks.com/';
+            const url = 'https://javascriptwebscrapingguy.com/';
+            // const url = 'https://boisecodeworks.com/';
             await page.goto(url);
 
             const calendarIcon = await page.$eval('#f__container__fab', element => element.textContent);
